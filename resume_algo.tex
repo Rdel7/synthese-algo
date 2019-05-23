@@ -1,0 +1,629 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[margin=1.3in]{geometry}
+\begin{document}
+    \begin{titlepage}
+    \centering
+    \vspace*{\fill}
+    \huge\bfseries
+    Synthèse
+    
+    Algorithmique
+    
+    INFO-F-103
+    \vspace*{\fill}
+    \end{titlepage}
+\tableofcontents
+\newpage
+\noindent Livre « Problem solving with algorithms and data structures, using Python » Brad Miller et David Ranum, en anglais.
+
+\section{Types de données abstraits (abstract data types)}
+L'idée est de programmer quelque-chose de la manière la plus indépendante possible de la façon dont ça a été réaliser. L'utilisateur ne doit pas savoir comment c'est fait, on cache les détails d'implémentation.
+\subsection{Liste chaînée}
+Exemple, les listes Python, qu'on utilise sans savoir comment elles marchent.Il existe d'autres types de listes, comme les listes chainées. Le schéma est le suivant : la liste elle-même est un pointeur vers sont premier élément. Chaque élément contient une donnée, et un pointeur sur le suivant.
+\newline \newline 
+On peut implémenter une liste chaînée en Python en utilisant son propre type de liste. Mais dans ce cours, on va concevoir les choses sans, pour être indépendant du langage. 
+\newline \newline 
+Python n'aime pas vraiment les pointeurs, mais d'autres langages savent les gérer.Chaque élément de la liste est alors en mémoire, avec sa donnée et un pointeur sur le suivant. L'adresse est un numéro. 
+\newline \newline 
+On peut également utiliser en utilisant des tableaux, et des références (utilisées en Python). Pour réaliser une liste chaînée avec des tableaux, on a besoin de deux vecteurs, un pour les informations, et un pour les "suivants". La tête de liste est l'indice dans la table des données du premier élément. Ce même indice dans la table des suivants donne l'indice de l'élément suivant. -1 pour quand on est arrivé à la fin de la liste.
+\newline \newline 
+Qu'on le fasse avec des pointeurs ou des tableaux, ce sont des détails d'implémentation. L'utilisateur de la liste ne doit pas savoir comment on a fait pour utiliser la liste. Dans la version avec références, écrite en Python, on essaie de cacher les détails d'implémentation. 
+\newline \newline 
+On commence par définir une classe Node, un nœud qui représente un élément de la liste.  Il contient une donnée et un élément suivant.  On utilise ensuite des getters et des setters.  C'est une bonne pratique de programmation que de faire des fonctions permettant de définir des informations ou de les obtenir.  Ces fonctions permettent simplement de mettre une donnée ou un suivant dans le nœud.
+\newline \newline 
+On définit ensuite la classe UnorderedList. Son constructeur contient juste "self.head = None", la liste est vide.  La fonction isEmpty() permet de savoir si la liste est vide ou pas. Il suffit de comparer si head == Node. 
+\newline \newline 
+Pour ajouter un élément, on l'intercale entre la tête de liste et le premier élément, c'est un prepend. On commence par instancier un nœud avec la bonne donnée mise dedans. Le next du nœud vaut None. Ensuite, on utilise Node.setNext() pour y mettre la tête de liste. Si la liste contient déjà des choses, Node.next devient la référence sur l'élément suivant dans la liste, l'ancien premier. Pour finir, on met le nœud dans la tête de liste. Ainsi, on obtient une liste dont le premier élément est celui qu'on vient d'ajouter, suivi par ceux qu'il y avait avant.
+\newline \newline 
+On peut également vouloir insérer un élément après un autre déjà présent dans la liste. Comme avant, on instancie un nouveau Node. Ensuite, on met dans le next du nouveau Node le next du Node après lequel on veut insérer. Le Node après lequel on veut insérer voit ensuite son next remplacé par le nouveau Node. La liste est maintenant bien construite.
+\newline \newline 
+length() permet d'obtenir la taille de la liste. C'est une fonction simple. On explore chaque élément du premier au dernier, en incrémentant un compteur à chaque tour. Quand on a fini la liste, le compteur contient le nombre d'éléments dans la liste. 
+\newline \newline 
+search() permet de rechercher un élément. Cette fonction prend comme paramètre la valeur qu'on aimerait qu'un élément ait. Là aussi, on parcoure les éléments du premier au dernier, et on n'en sort que si on sort de la liste ou qu'on a trouvé l'élément cherché. Si on a trouvé l'élément, on met une variable found à True. À la fin de la fonction, on renvoie donc si l'élément existe dans la liste ou pas.
+\newline \newline 
+remove() permet de retirer un élément. Comme dans search(), on va parcourir les éléments les uns après les autres, en s'arrêtant quand on a trouvé le bon (ou qu'on a parcouru toute la liste). Une différence ici est qu'on retient, à chaque étape, quel était l'élément précédent. Ainsi, quand on a trouvé le bon élément, on a la variable previous qui permet d'avoir le précédent (None pour la tête de liste). Il suffit alors de changer le next de previous pour y mettre le next du nœud trouvé, ou de mettre la tête de liste au suivant du nœud qu'on a trouvé. On fait un "pont" au-dessus de l'élément qu'on veut supprimer. 
+\begin{figure}[h!]
+  \includegraphics[width=0.3\linewidth]{schema.png}
+\end{figure}
+\newline 
+On a implémenté des listes de trois manières différentes, mais ça reste des listes, et la classe UnorderedList ne contient qu'une interface. L'utilisateur n'a pas à se préoccuper de comment on a réalisé nos listes.
+\subsubsection{Passage d'une liste en paramètre et assignation}
+Ce passage est propre à Python et permet d'éviter les pièges. Il faut savoir que pour Python, une variable est une référence. Si on crée une liste dans L et qu'on assigne L à M, L et M pointent vers la même liste. Ce sont deux noms pour la même liste, sans aucune duplication. "M is L" revoie True. Si on passe la liste comme paramètre, la variable recevant le paramètre devient une référence sur la liste. On peut appeler une méthode sur cette liste passée en paramètre. Cette fonction modifie le contenu des listes L, M et de la fonction, car ce sont trois noms pour le même objet, et c'est l'objet qui est modifié. 
+\newline \newline 
+La bibliothèque copy de Python propose les fonctions copy et deepcopy. On crée N, une copy, et O, une deepcopy. "N is M" renvoie False, on a deux listes différentes. "O is M" renvoie également False. On a donc bien trois listes différentes. On crée une variable Node, qui reçoit N.head. On prend le next de ce nœud, et sa donnée est 2 (la liste contient [1, 2, 3, 4, 5]).
+\newline \newline 
+On insert ensuite un élément après Node, dans la liste L. C'est bizarre car Node vient de la liste N, mais on peut faire ça car copy.copy n'a copié que la tête de liste. Le reste, les nœuds qui se suivent, est créé dynamiquement et n'est donc pas copié. On a donc deux têtes qui pointent vers le même premier nœud, et les suivants sont communs. L.length(), M.length() et N.length() retournent tous 6. Les deux premiers car ils
+sont le même objet avec deux noms, et le troisième car la tête est la même mais la liste partagée. 
+\newline \newline 
+Finalement, O ne contient que 5 éléments, car deepcopy a copié tous les éléments, nœuds compris.
+\subsubsection{D'autres listes}
+Il est possible d'avoir d'autres listes. La liste circulaire est comme une liste chaînée, mais le dernier élément pointe vers le premier, qui est en fait un élément bidon créé pour simplifier la liste. 
+\newline \newline 
+La liste bidirectionnelle est une liste chaînée avec une information, pour chaque nœud, de nœud suivant ainsi que précédent. 
+\newline \newline 
+En mélangeant les deux, on obtient une liste circulaire bidirectionnelle. Le premier élément a comme précédent le dernier, et le dernier a comme suivant le premier. 
+\newline \newline 
+On va regarder comment écrire une liste bidirectionnelle. La classe Node ne change pas tellement, à part qu'elle stocke un suivant et un précédent. On ajoute getPrevious() et setPrevious(). 
+\newline \newline 
+Pour insérer un élément, on crée un nœud, on lui met comme suivant la tête de la liste. Ensuite, si la tête de liste n'est pas None, on lui dit que son précédent est le nouveau nœud qu'on ajoute juste avant. Le double lien est maintenant en place. Pour finir, la tête de liste devient le nouveau nœud.
+\newline \newline 
+Pour insérer un élément, on crée un nœud, dont le précédent est l'élément base après lequel on veut insérer. Le suivant de ce nouvel élément est base.next. Ensuite, si base a un suivant, le précédent de ce suivant devient le nouvel élément. Pour finir, le suivant de base devient le nouveau nœud.
+\newline \newline 
+La fonction length() explore toute la liste comme dans le cas simplement chaîné. C'est inefficace, il suffirait de garder dans la classe Liste un compteur qu'on incrémente quand on insert des choses et qu'on décrémente quand on en supprime. 
+\newline \newline 
+Pour supprimer un élément (il faut s'assurer qu'on passe bien un vrai élément comme paramètre), il faut à nouveau ajuster les liens entre les éléments. S'il existe, le précédent.suivant devient base.suivant. Sinon, on met base.suivant dans la tête de liste. S'il existe, le suivant.précédent devient base.précédent.
+\newline \newline 
+La liste circulaire est créée avec un élément bidon en tête. Cet élément physique ne fait pas partie de la liste logique. Le vrai premier élément est en fait le second physique. 
+\newline \newline 
+La classe Node redevient celle de la liste simplement chaînée, le fait qu'on aura une boucle n'a pas besoin d'être géré ici. Le constructeur de UnorderedList crée un nœud de valeur -1, et le met dans la tête de la liste. On dit ensuite que le suivant de ce nœud bidon est lui-même, la boucle est bouclée.
+\newline \newline 
+La liste est vide lorsque le suivant de la tête de liste est la tête de liste elle-même, c'est uniquement l'élément bidon.
+\newline \newline 
+Pour une insertion en tête, on crée un nœud. Le suivant de ce nœud est simplement le suivant de la tête. Le suivant de la tête devient alors ce nouveau nœud. 
+\newline \newline 
+La fonction addAfter est comme head, sauf qu'on travaille avec base plutôt qu'avec la tête, sinon c'est la même chose. On remarque ici que le code est simplifié du fait qu'on ne doit plus gérer si on est au dernier élément. 
+\newline \newline 
+Pour compter, on commence avec le deuxième élément physique. On ne s'arrête plus à None, mais quand le suivant redevient la tête de liste. Pour search(), on fait comme la liste chaînée mais on ne teste pas si l'élément trouvé est None, mais la tête de liste. 
+\newline \newline 
+Pour la suppression, c'est également comme dans le cas de la liste chaînée, sauf qu'on ne doit plus tester les None, car on revient automatiquement au début. Grâce à l'élément bidon, un élément de la liste a toujours un élément précédent, même si c'est le bidon. 
+\newline \newline 
+Note : les primitives sont le nom qu'on donne aux fonctions au sein d'une classe que les gens peuvent utiliser. Il faut s'assurer que leur nom, paramètres, type de retour soit indépendant de l'implémentation <<physique >> de la classe.
+\subsection{Piles}
+Notre notation de formules mathématiques est la notation infixe, on place les opérateurs entre les opérandes. Cela nécessite une gestion des priorités et des parenthèses.  
+\newline \newline 
+La notation polonaise inversée, appelée postfixe, place d'abord les opérandes puis l'opérateur, comme a b + c * d + . On fait a + b , puis ce résultat fois c, puis on additionne encore d. C'est une machine à pile. Cette notation ne nécessite pas de gérer des parenthèses. 
+\newline \newline 
+Pour évaluer une expression postfixe, il suffit de la parcourir de gauche à droite. Pas de parenthèses, pas de priorités. Il faut juste penser à sauvegarder les opérandes. Si on veut évaluer a b c + d e + * f + * , il faut sauvegarder a, puis b, puis c. Puis, on fait l'addition, et on garde b+c. On stocke ensuite d, puis e, puis on effectue d + e. 
+\newline \newline 
+On a ensuite le *, pour cela on prend les deux derniers éléments, c'est à dire b+c et d+e. On les multiplie. Il reste encore à push f, à faire la somme, puis la multiplication finale. 
+\newline \newline 
+La structure nécessaire pour faire ça est une pile. On remarque qu'on pousse des éléments ou des résultats, et que chaque opération nécessite les deux dernières valeurs calculées. C'est une pile « last in, first out ».
+\subsubsection{Implémentations}
+On peut utiliser un vecteur dont chaque cellule peut contenir un élément de la pile. Au début, le vecteur a une certaine taille mais est « vide ». On garde un pointeur sur le prochain élément libre. 
+\newline \newline 
+En utilisant une liste (chaînée dans le syllabus, mais pas nécessairement), il est possible d'implémenter le push par une insertion en tête (rapide seulement pour les listes chaînées). Pour le pop, on retire le premier élément. L'implémentation qu'on voit en Python utilise l'ajout à la fin, et se base sur la liste Python vide. 
+\newline \newline 
+On peut également utiliser notre classe Node qui permet de faire des listes chaînées. On garde dans la classe Stack un sommet, et un champs "n" contenant la taille de la liste. isEmpty() se fait simplement en comparant sommet à None. Pour top(), on retourne simplement sommet.data. Cela plante si la liste est vide, une pré-condition de l'usage de top est que la pile ne peut être vide.  
+\newline \newline 
+Pour push(), on crée un Node, on lui met en next le sommet de la liste, puis notre sommet devient ce nouveau nœud. On incrémente également n. C'est un simple prepend de liste chaînée. Le pop() s'implémente en gardant dans une variable sommet.data, puis on met sommet = sommet.next, et on décrémente n. On retourne le contenu de notre variable temporaire.
+\subsubsection{Évaluation d'une expression postfixe}
+On va maintenant implémenter un programme qui permet d'évaluer une expression postfixe. On commence avec une fonction doMath(op, op1, op2) qui permet d'effectuer l'opération op sur les opérandes op1 et op2. Il faut faire attention à l'ordre dans lequel on passe op1 et op2 à cette fonction, car - et / ne sont pas commutatifs. 
+\newline \newline 
+La fonction postfixEval(expr) reçoit une chaîne de caractère contenant des tokens séparés par des espaces. On commence par créer un stack, en utilisant notre classe Stack. Puis, on split l'expression pour obtenir des tokens sans espaces. On explore ensuite les tokens. Il faut voir si c'est un opérateur ou un opérande. Si c'est un opérande, on le push convertit en int. Si on arrive à un opérande, on pope les deux éléments au sommet de la pile, en sachant que l'élément du dessus de la pile est celui ajouté en dernier, donc le deuxième opérande. On finit par un appel à doMath(), puis on pushe le résultat sur la pile. 
+\newline \newline 
+La valeur de retour de la fonction est le sommet de la pile quand on a finit toute l'évaluation.
+\subsubsection{Évaluation d'une expression infixe}
+On s'intéresse ici à une fonction qui vérifie si les parenthèses sont balancées. On explore la chaîne caractère par caractère tant qu'elle est balancée. Si le symbole courant est une parenthèse ouvrante, on la push sur la pile (c'est une pile de caractères). Si on a une parenthèse fermante et que la pile est vide, problème, l'expression n'est pas balancée. On quitte la boucle. Si tout va bien, on pope la parenthèse au sommet de la pile. 
+\newline \newline 
+Pour que la chaine soit bonne, il faut que ce soit balancé et qu'à la fin de l'expression, il n'y ait plus de parenthèse dans la pile. 
+\newline \newline 
+La pile n'était pas indispensable ici, on peut simplement compter le nombre de parenthèses ouvrante ou fermante. On n'a en fait besoin que du compteur, et il ne peut pas devenir négatif. Il ne faut pas utiliser de pile quand ce n'est pas nécessaire. 
+\newline \newline 
+On remarque également que ce code utilise la pile, tout simplement. On utilise des fonctions push(), pop() et isEmpty(), mais c'est tout. Ce code fonctionne aussi bien quelque soit l'implémentation de la pile. 
+\newline \newline 
+La pile peut être nécessaire si on a plusieurs types de parenthèses, comme ([. Il faut alors vérifier que les symboles se correspondent, pas [) par exemple. Là, la pile est nécessaire pour vérifier que quand on ferme un symbole, cela corresponde à celui qui avait été ouvert à ce niveau. 
+\newline \newline 
+La fonction matches est intéressante : 
+\lstset{language=Python}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+def matches(open, close) : 
+	opens = "([\{" 
+	closers = ")]\}" 
+	return opens.index(open) == closers.index(close)
+\end{lstlisting}
+\subsubsection{Convertir le infixe vers postfixe} 
+On va maintenant essayer de convertir une expression infixe en postfixe. Il faut pour cela se préoccuper de tout un tas de choses, comme les parenthèses, la priorité des opérateurs, etc. 
+\newline \newline 
+On commence par créer un dictionnaire associant une priorité à chaque opération (* et / = 3, + et - = 2, parenthèse = 1). On initialise une pile et un résultat qui est une liste. 
+\newline \newline 
+On parcourt ensuite chaque caractère de l'expression. Cette fois-ci, on ne gère pas la possibilité d'avoir des nombres composés de plusieurs chiffres. 
+\newline \newline 
+Si on a un caractère qui est un chiffre ou une lettre, c'est un opérande (on gère donc aussi les variables). On le place à la fin de la liste result. Si on a une parenthèse ouvrante, on la push. Si elle est fermante, on pope le stack et on vérifie qu'on a bien une parenthèse ouvrante sur la pile. Si le sommet de la pile n'est pas une parenthèse ouvrante, on place dans la liste de résultat tous les symboles de la pile jusqu'à ce qu'on aie la parenthèse ouvrante. 
+\newline \newline 
+Si ce n'est rien de tout ça, alors c'est que le caractère courant est un opérateur. Tant qu'il y a des opérateurs dont le poids est supérieur ou égal au poids de ce nouvel opérateur sur la pile, on les pope et on les ajoute au résultat. Pour finir, on push le symbole sur la pile. 
+\newline \newline 
+Pour finir, on ajoute au résultat le contenu de la pile jusqu'à ce qu'elle soit vide, et on joint le résultat pour en faire une chaîne.
+\subsection{Les files}
+On termine le chapitre sur les files. Une file est une structure permettant à l'élément le plus ancien de sortir, pas le plus récent. C'est le « first-in, first-out » ou FIFO. C'est comme un tube dans lequel on fait se suivre des éléments.  
+\newline \newline 
+On peut utiliser un tableau pour la file. Le problème est que la zone doit être circulaire, il faut garder un pointeur sur l'élément le plus récent (pour ajouter) et le plus ancien (pour vider la queue). On considère que la zone libre au début du tableau est contigüe. 
+\newline \newline 
+On peut également utiliser une liste chaînée circulaire, avec son élément bidon. On ne stocke simplement pas dans la tête de liste le pointeur sur le premier élément, mais sur le dernier. Pour trouver le premier élément, il suffit de faire 
+\newline
+last.last(bidon).last .  
+\newline \newline 
+Avec une liste Python, on prepend les nouveaux éléments et on les retire en fin de liste avec pop(). 
+\newline \newline 
+L'implémentation en utilisant la classe Node utilise une référence first et une last. Ce n'est pas circulaire, ça vient du cours de programmation. head() est simplement first.data (first pointe donc sur le plus ancien). Quand on insert, si la liste est vide, le nouvel élément est à la fois premier et dernier. Sinon, last.next devient cet élément, et last devient cet élément. Pour remove(), on supprime en tête de liste. On retient la donnée first.data, puis first devient first.next. On retourne ensuite la donnée retenue. Dans ces deux fonctions, on garde à jour un compteur de la taille de liste.
+\newpage
+\section{La récursivité}
+Quelque chose de récursif fait référence à lui-même. Ici, on parlera de fonctions qui s'appellent elles-mêmes. Souvent, le cerveau humain réfléchit de manière récursive, ça semble logique. C'est aussi lié au concept de récurrence des mathématiques : on a un cas de base, et on bâtit dessus la démonstration. En informatique, c'est l'inverse, on a le cas général et on veut arriver au cas de base.
+\subsection{Vraie et fausse récursivité}
+L'exemple classique est la factorielle. Si $n = 0$, sa factorielle est 1. Sinon, $n ! = n.(n-1) ! $. De manière récursive, on descend dans les n-1 et on arrivera à 0.  
+\newline \newline 
+Une liste linéaire peut aussi se considérer comme étant soit une liste vide, soit un élément suivi d'une liste. Parcourir une liste devient alors récursif : on parcourt l'élément puis la liste qui suit.  
+\newline \newline 
+Il y a trois règles pour pouvoir faire de la récursivité :  
+\begin{itemize}
+
+		\item[$*$]On doit avoir une référence directe ou indirecte à un objet identique. Par exemple, la fonction $f()$ doit s'appeler elle-même. Une référence indirecte est possible, $f()$ appelle $g()$ qui appelle $f()$. 
+
+		\item[$*$]On doit avoir un cas simple, sinon la récursivité continuera sans fin. Il doit être explicitement visible, ça doit être clair.
+
+		\item[$*$]Pour finir, il doit y avoir une notion de taille. Le problème doit se réduire à chaque étape, et s'approcher du cas simple. Si le problème se développe et ne tend pas vers le cas simple, on ne l'atteindra jamais.
+\end{itemize}
+La suite de syracuse est récursive mais on ne peut pas démontrer son cas 3. En pratique néanmoins, elle tend vers son cas simple, mais personne n'a encore su le démontrer. 
+\newline \newline 
+La plupart des langages, mais pas tous, permettent la récursivité. Python en fait partie, ainsi que C++, Java, etc. 
+\newline \newline 
+La récursivité utilise la pile des appels. La vraie récursivité nécessite une pile pour faire ses sauvegardes, mais il est possible de dé-récursifier, ce qui peut apporter des améliorations de performance. Attention, la récursivité a besoin d'une pile, mais toute pile ne veut pas dire qu'on fait un truc récursif. 
+\newline \newline 
+Attention, la pile a une taille limitée, et les programmes récursifs ne sont pas adaptés aux problèmes avec un énhaurme paramètre.  
+\newline \newline 
+La factorielle est l'exemple d'un algorithme qui peut être récursif, mais l'algorithme non récursif avec une simple boucle est plus simple et plus rapide. C'est en fait un cas de fausse récursivité, mais simple donc montré comme exemple.  
+\newpage
+La suite de Fibonacci est la somme des deux nombres qui précède. On a besoin de deux cas simples et on fait ça de manière récursive. Les coefficients binomiaux sont un problème facilement résolvable de manière récursif : 
+\lstset{language=Python}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+def binomiale(n, p):
+	 if p > n : 
+		return 1 
+	 elif p == 0 : 
+		return 0 
+	 else : 
+		return binomiale(n-1, p-1) + binomiale(n-1, p) 
+\end{lstlisting}
+Néanmoins, la slide 41 du chapitre montre qu'on peut s'en tirer avec une boucle sans récursivité. On a donc vu dans tous ces exemples des mauvais cas de récursivité. La récursivité est simple mais a un coût. Une vraie récursivité ne peut se passer d'une pile. 
+\subsection{Dé-récursification quand c'est possible} 
+Un exemple à montrer est le changement de base : 
+\lstset{language=Python}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+unites = "0123456789abcdef"
+
+def convert(n, base) : 
+	if n < base : 
+		return unites[n] 
+	else : 
+		return convert(n / base, base) + unites[n]
+\end{lstlisting}
+L'ordre dans lequel on effectue la concaténation a de l'importance pour construire le nombre dans le bon sens. On peut néanmoins dé-récursifier cette fonction, comme montré en slide 49. Mais cette fois-ci, on ne peut se passer d'une pile, qui est simplement rendue ici explicite. En fait si, et la slide 50 montre comment ne plus utiliser de pile, mais simplement une boucle sans pile. 
+\newline \newline 
+Voici maintenant un vrai cas de récursivité. Imaginons une liste d'éléments (courte). On veut générer toutes les permutations possibles de ces éléments. La slide 51 montre une classe qui résout ce problème.  
+\newline \newline 
+[INTÉRESSANT cf slide 58] Une autre récursivité vraie est la conversion de la notation infixe vers postfixe (notation polonaise inverse). La fonction expression dit qu'une expression est un terme suivi de + ou -, puis d'un terme. Un terme est un facteur * ou / un facteur. Un facteur est soit une parenthèse ou rante (contenant une expression), soit un nombre ou une variable qu'on écrit alors dans la sortie. 
+\newline \newline 
+On voit ici qu'on n'a pas du coder les priorités à la main. On a écrit le code exactement suivant la définition d'une expression. C'est très lisible et élégant. 
+\newline \newline 
+On peut maintenant évaluer le code. Cela ressemble très fort car on doit toujours transformer en notation postfixe pour ne pas avoir à gérer les parenthèses. 
+\subsection{Diviser pour résoudre}
+Il est parfois plus facile de décomposer un problème en sous problèmes, plus faciles à résoudre. On appelle ça « Divide and Conquer ». C'est généralement récursif, mais pas nécessairement. La complexité de ces codes est également généralement optimale par rapport à d'autres solutions.  
+\newline \newline 
+Un exemple peut être la recherche du plus grand élément d'une liste. On trouve le plus grand de la première moitié, puis de la seconde, et on retourne le plus grand entre les deux. On a ainsi, récursivement, le maximum de la liste. Attention, cet exemple explique la technique, mais il ne faut pas faire ça !  
+\newline \newline 
+Dans le cas d'une liste triée, ce système est plus efficace, c'est la recherche dichotomique. 
+\newpage
+\section{Les tris}
+\subsection{Le tri bulle}
+C'est un tri qui consiste à faire avancer les éléments vers la fin du vecteur, jusqu'à ce qu'ils soient là où ils doivent être. Cela se fait par des swaps successifs. Cela fait qu'au premier tout, le plus grand élément du vecteur est placé à son extrémité. Ensuite, l'avant-dernier, puis celui d'avant, etc. On s'arrête quand il n'y a plus besoin de faire des swaps. 
+\newline \newline 
+C'est un tri naturel et intuitif, et se programme très facilement. Il suffit de deux boucles imbriquées. Malheureusement, sa complexité est en $O(n^2)$. La boucle intérieure n'est en fait pas tout à fait en $O(n)$, car on parcourt d'abord n éléments, puis n-1, etc. Au total, ça donne n(n-1)/2, donc $O(n^2)$. 
+\newline \newline 
+On peut accélérer le cas où le vecteur est déjà trié. À chaque étape, on met exchange à True dès le premier swap. S'il est resté à False, c'est que le vecteur était trié, et on arrête.
+\subsection{Le tri par sélection}
+Il ressemble au tri bulle. On ne fait pas plein de swaps, on explore d'abord toute la liste pour recherche le plus grand élément, et on le swap (uniquement lui) seulement quand on l'a trouvé. Ainsi, c'est plus rapide, car le swap a un coût.
+\subsection{Le tri par insertion}
+Ici, on considère une partie triée du vecteur et une partie non-triée. On explore la partie non triée, élément par élément. À chaque élément, on regarde simplement où il faut l'insérer dans la partie triée. Il faut décaler les éléments pour faire de la place, ce qui est lent, et écrase un élément (mais ça ne pose pas de problème car on peut écraser l'élément qu'on va insérer). 
+\newline \newline 
+On a à nouveau besoin de deux boucles. La slide 8 montre comment faire ce décalage de manière simple en explorant la liste dans le sens décroissant.  
+\newline \newline 
+Cet algorithme est à nouveau en $O(n^2)$. Si on le compare aux autres algorithmes, on se rend compte qu'ils se distinguent par leur complexité minimale, qui est en $O(n) $pour le tri bulle et par insertion. Tous ces tris sont « en place », ils travaillent sur le vecteur lui-même et n'ont pas besoin de stockage ailleurs. Par contre, le tri par sélection n'est pas stable (les autres le sont), cela veut dire que si deux 3 se suivent, rien ne dit qu'ils resteront dans le même ordre une fois triés. C'est dangereux car on peut parfois vouloir que deux « clés » qu'on trie restent dans l'ordre. Inverser deux valeurs identiques peut inverser des valeurs qui n'auraient pas dû.
+\subsection{Le tri shell}
+C'est une amélioration du tri par insertion. Il est possible, en moyenne, d'arriver à une complexité en $O(n log n)$. L'idée est de considérer le vecteur comme un ensemble de sous-listes. On trie d'abord par exemple tous les éléments distants de 3 entre deux (donc il y a deux éléments ignorés entre eux). On fait ça 3 fois, avec un décalage, pour trier tous les vecteurs. Ce sont des tris par insertion sur des vecteurs plus petits. 
+\newline \newline 
+On obtient maintenant un vecteur un peu mieux trié, et on fait le tri par insertion dessus. L'avantage est que les swaps seront plus proches, on ne devra jamais insérer le dernier élément en tête de liste, il y a moins de décalages à faire. Cela améliore les performances. 
+\subsection{Le tri fusion}
+Il est également possible, pour trier, d'utiliser des algorithmes de « diviser pour résoudre ». Dans le merge sort, on coupe le vecteur en deux, et on trie chaque partie, puis on fusionne. On fait ça jusqu'à ce qu'on descende aux singletons, qui sont triés avec eux-mêmes, et on remonte pour faire toutes les fusions.  
+\newline \newline 
+Comme on coupe toujours en deux, on a une profondeur de log n. Ensuite, on fusionne les listes, ce qui se fait en $O(n)$ à chaque niveau, puisque ces listes qu'on fusionne sont déjà triées, on ne compare que les éléments qui se correspondent (les deux premiers, puis le premier et le deuxième d'une autre liste, etc). 
+\newline \newline 
+Comme il y a log n niveaux et qu'il faut $O(n)$ pour trier un niveau, la complexité de ce tri est $O(n log n)$. C'est un tri plus performant que tout ce qu'on a vu. 
+\newline \newline 
+Le code est récursif et facile à aborder. On coupe d'abord la liste en deux, et on merge sort les deux parties. Puis, quand on revient du sous-merge sort, on peut fusionner, la deuxième étape de l'algorithme. Quand on fusionne, il ne faut pas oublier, quand on arrive à la fin d'un vecteur, de vider ce qui reste de l'autre dans la liste résultat. La slide 21 dispose de deux petits while à la fin qui font ça. 
+\newline \newline 
+Ce tri a une excellente complexité, mais n'est pas un tri en place, on a un coût de copie. On a gagné de la performance en utilisant du stockage. 
+\subsection{Le quicksort} 
+C'est sans doutes le tri le plus performant, et en place. Il divise également pour résoudre. Alors que merge sort coupe en deux au milieu, quicksort prend un élément au hasard dans le vecteur, et partitionne autour de cet élément. 
+\newline \newline 
+Cela veut dire qu'on prend cet élément au hasard, et on met tous les plus petites à gauche, les plus grand à droite. Mais comme on ne coupe pas exactement au milieu, notre profondeur de pile n'est pas garantie à log n. 
+\newline \newline 
+L'astuce est que quand on déplace ces éléments plus petits et plus grands, on ne les trie pas, on les déplace en bloc. On recommence alors le processus sur chacun des deux morceaux. On avance ainsi au fur et à mesure, jusqu'à ce qu'on tombe sur un singleton. En effet, à chaque itération, un élément est trié : le pivot. On finit donc par considérer tous les éléments comme pivot, et sont donc tous triés. Notons que le pivot n'est pas un élément fixe, il se déplace jusqu'à arriver à sa bonne position. 
+\newline \newline 
+Les performances dépendent du partitionnement. Si le pivot est bien choisi, les performances sont très bonnes. Cormen a écrit un livre très clair sur l'algorithmique, et propose une manière de partitionner assez claire. L'idée est qu'on reçoit un indice gauche et un indice droit. Au début, ces deux encadrent tout le vecteur. On les adaptera à chaque étape pour gérer la sous-liste qu'on veut regarder. On choisit alors le pivot comme étant l'élément le plus à droite. Rien ne dit qu'il restera à droite, donc c'est tout à fait correct. 
+\newline \newline 
+Ensuite, on parcourt tous les éléments du vecteur. On a deux pointeurs, celui qui pointe sur le dernier élément plus petite, à gauche (initialisé à -1), et le pointeur de l'élément courant. À chaque élément, s'il est plus petit que le pivot, on le déplace et on l'échange avec l'élément juste après le dernier des plus petits. Ainsi, on avance dans le vecteur, avec une zone d'éléments plus petits qui grandit de la gauche, et une zone d'éléments plus grands qui se déplace vers la droite. Quand on a fini, on a à gauche les plus petits, et à droite les plus grands. 
+\newline \newline 
+La dernière instruction swap le pivot avec l'élément plus grand le plus à gauche. Cela le place exactement là où il doit être. On retourne ensuite l'index du pivot. 
+\newline \newline 
+Une fois le partitionnement fait, le quicksort est une fonction de 3 instructions : partitionner, puis quicksort la partie gauche et la partie droite. Cet algorithme n'est pas stable, car on swap les éléments plus grands que le pivot, ce qui peut amener à inverser leur ordre.  
+\newline \newline 
+Une autre manière de partitionner existe. On prend le pivot au milieu du vecteur. Rien ne dit qu'il y restera. Ensuite, on part de la gauche et de la droite. On part de gauche, et on continue tant qu'on a des éléments plus grand que le pivot. Si on tombe sur un élément plus petit, on part de la droite et on avance jusqu'à en trouver un plus grand. On le swap alors avec le trop petit trouvé depuis la gauche. On arrête quand les deux indices se croisent.  
+\newline \newline 
+Pour ce code, on a besoin d'une boucle "n + 1/2". C'est une boucle en while True, avec une condition d'arrêt et un break au milieu. On aura donc toujours une partie de la boucle qui s'exécutera.  
+\newline \newline 
+La troisième version, celle du livre de référence du cours, part également de la gauche et de la droite. Mais cette fois-ci, le pivot est pris à gauche, et on considère les éléments depuis gauche+1 à droite. On fait comme la deuxième solution, on avance depuis la gauche et la droite et on swap les éléments quand ils ne sont pas dans la bonne partie. On s'arrête quand i et j se croisent. Il suffit alors de placer le pivot au bon endroit, c'est à dire le swap avec le dernier des éléments plus petits. On retourne cet index, et on fait le quicksort classique en 3 lignes avec cette valeur de retour. 
+\newpage
+\section{Les arbres}
+Les arbres sont une façon de pensée proche de la logique de notre cerveau. Nous avons vu les listes linéaires, avec une seule dimension. On a un suivant et un précédent. Dans un arbre, on peut avoir plusieurs suivants. 
+\newline \newline 
+Un arbre est une collection de nœuds, et des arrêtes qui les relient. Le début de l'arbre est la racine, qu'on dessine en haut. Un chemin est une suite de nœuds distincts reliés par une arrête. On explore l'arbre. 
+\newline \newline 
+Pour être un arbre, il faut qu'il n'y ait qu'un seul chemin entre la racine et un nœud pris au hasard. Si un nœud a plusieurs parents, on obtient un graphe, qui se gère d'une autre manière. L'avantage d'un arbre est qu'il n'y a pas de cycles, on ne risque pas de tourner en rond. 
+\subsection{Définition}
+La définition récursive d'un arbre est que c'est soit un arbre vide, soit un nœud racine disposant d'un ensemble de sous-arbres disjoints.  
+\newline \newline 
+Le degré d'un nœud est le nombre de sous-arbres accrochés, son nombre d'enfants. Les nœuds terminaux, sans sous-arbres, sont appelés des feuilles. Elles peuvent être à différents niveaux, proche de la racine ou pas. Les autres nœuds, qui ont un degré différent de zéro, sont appelés nœuds internes. On utilise aussi le langage de nœuds parents et enfants. 
+\newline \newline 
+Le niveau d'un nœud est le nombre de parents successifs au-dessus du nœud. La racine est de niveau 0. Chaque nœud a le niveau de son parent + 1. La hauteur de l'arbre est le niveau maximal de ses nœuds.  
+\newline \newline 
+Le nombre d'arêtes dans un arbre est toujours égal au nombre de nœuds - 1. En effet, chaque nœud a un père, sauf la racine.  
+\newline \newline 
+Un arbre où chaque nœud a au plus m fils est m-aire. Par exemple un arbre tertiaire ou binaire. Quand un arbre m-aire possède tous ses nœuds internes avec m fils, on dit qu'il est plein. Il n'y a plus moyen d'ajouter des fils sans changer une feuille en un nœud interne. Le niveau i d'un arbre m-aire est rempli quand tous les nœuds du niveau n-1 ont m fils. On ne peut pas ajouter de nœud dans ce niveau sans ajouter un nouveau parent au niveau supérieur. 
+\newline \newline 
+Un arbre m-aire est complet s'il est plein à tous les niveaux sauf le dernier, où tous les nœuds présents se trouvent à gauche. Ça arrive quand on ajoute des nœuds petit à petit à un arbre m-aire.  
+\newline \newline 
+Un arbre m-aire complet de hauteur n possède $m^k$ nœuds au niveau $k < n$ et entre 0 et$ m^n$ nœuds rangés à gauche au niveau n. 
+\newline \newline 
+Un arbre est parfait lorsque toutes les feuilles sont au même niveau et qu'il est plein. 
+\subsection{Arbres binaires}
+Un arbre binaire dispose, à chaque nœud, de 0, 1 ou 2 enfants. On parle du fils gauche et du fils droit. Un arbre binaire parfait de hauteur n possède $2^n$ feuilles et $2^(n+1)-1$ nœuds. Il possède $2^(n-1)$ nœuds internes. Un arbre qui possède m nœuds internes possède au maximum m+1 feuilles. Il y a donc quasiment autant de feuilles que de nœuds internes.  
+\newline \newline 
+Les arbres binaires peuvent être représentés sous forme de tableaux. On met la racine à l'indice 0. Les fils gauche et droite se trouvent alors aux positions 2i+1 et 2i+2, où i est l'indice dans le tableau de l'élément auquel on ajoute les enfants. Le vecteur se remplit alors tout naturellement de gauche à droite, si l'arbre est complet. 
+\newline \newline 
+On peut également utiliser des pointeurs ou des références. Chaque nœud contient un pointeur sur son fils gauche et un sur son fils droit. Un arbre binaire peut aussi être vu récursivement, un arbre est donc une racine avec un sous-arbre gauche et un sous-arbre droit. 
+\newline \newline 
+L'interface d'un arbre dispose de getRootVal, setRootVal, getLeftChild (prendre le sous-arbre gauche), getRightChild, ainsi que modifyLeft et modifyRight (remplacer un sous-arbre par un autre, utile pour construire l'arbre, ces fonctions prennent des entiers et créent les sous-arbres elles-mêmes). La slide 50 montre une version d'un arbre binaire Python représenté par des listes qui contiennent des listes. 
+\newline \newline 
+On peut également créer une classe BinaryTree, comme montré en slide 68.  
+\newline \newline 
+La version non-récursive de l'arbre voit chaque nœud comme ayant explicitement un fils gauche et un fils droit. La référence à l'arbre lui-même est en fait une simple référence au nœud racine.  
+\newline \newline 
+L'interface se décompose en deux classes : Node et Tree. La classe Node possède les méthodes getInfo (prendre son contenu), getLeft, getRight, setInfo, setLeft et setRight (qui prennent cette fois-ci des nœuds en paramètres). La classe Tree dispose de getRoot, modifyLeft, modifyRight (qui prennent comme paramètre un nœud et une valeur à mettre dedans à gauche ou à droite). L'implémentation Python est présentée en slide 81. 
+\subsection{Parcours d'arbres binaires} 
+Le parcours en pré-ordre ou préfixé consiste à traiter d'abord la racine, puis on parcours récursivement le sous-arbre gauche, puis le droit. On descend donc tout l'arbre le long de son arrête gauche, puis on avance dedans de gauche à droite. 
+\begin{figure}[h!]
+  \includegraphics[width=0.25\linewidth]{schema2.png}
+\end{figure}
+\newline
+Le parcours infixe ou in-ordre, ou symétrique, consiste à d'abord explorer le fils gauche, puis la racine, puis le fils droit. Le parcours suffixé consiste à traiter les deux fils, puis la racine. Cette dernière méthode fait penser à la notation polonaise inverse. 
+\newline \newline 
+Les parcours sont implémentés de manière récursive, très facilement quand on gère des arbres récursifs. Le parcours par niveau nécessite une file, vue au chapitre ADT. On commence par insérer tree dans la file, ce qui revient à y insérer la racine. Ensuite, on va explorer la file. À chaque fois, on sort le dernier élément inséré, on affiche sa valeur racine, puis on ajoute à la fin de la file ses enfants. L'ordre de niveaux est ainsi préservé.  
+\newline \newline 
+La slide 96 montre une dérécursification du deuxième appel récursif, utilisé sur un arbre non-récursif (à base de nœuds).
+\subsection{Forêts}
+Une forêt est un ensemble d'arbres. Pour représenter ça, on peut lier les racines entre elles pour savoir les retrouver. On va étendre ça aux autres nœuds, qui auront alors des fils, un parent, et des frères. 
+\newline \newline 
+L'interface est composée de getChild (sous-arbre gauche), getBrother (accès au frère), insertChild, insertBrother. La slide 108 montre à quoi ça ressemble. 
+\newline \newline 
+Note : on sait ici représenter facilement des arbres m-aires, pas seulement binaires. On ne parle plus ici de fils gauche ou droit. 
+\newpage
+\section{Le backtracking}
+Cela s'applique si on a un problème dont on doit explorer un ensemble de solutions possibles pour trouver la bonne. Ce n'est pas le tri dichotomique où on s'approche de la solution à chaque étape, ici on ne va pas s'en approcher. C'est une recherche exhaustive, mais pas que. 
+\newline \newline 
+On appelle ça le backtracking car quand on se rend compte qu'on n'a pas une bonne solution, on revient en arrière.  
+\newline \newline 
+On peut chercher la solution, la meilleure solution, une solution ou toutes les solutions.
+\subsection{Recherche exhaustive}
+Par exemple, afficher tous les nombres de 0 à 999 (pas intéressant), ou la génération de tous les sous-ensembles de taille k d'un ensemble de naturels (permutations). On appelle « solution » l'ensemble des éléments qu'on génère. 
+\newline \newline 
+On peut générer ces solutions facilement, avec une boucle, ou plus difficilement. Pour générer tous les mots de 5 lettres, on peut faire 5 boucles imbriquées, mais c'est immonde. De plus, une solution aussi « simple » ne marche pas si le nombre de lettres est un paramètre du programme. 
+\newline \newline 
+On va donc utiliser le backtracking : générer un mot, puis faire un backtrack et en générer un autre. Pour faire des mots booléens et de taille n, on peut le faire récursivement : on place un bit, puis on permute tous les autres (n-1), puis on permute ce bit et on recommence. Ainsi, récursivement, tous les bits seront associés à tous les autres. Slide 21. 
+\newline \newline 
+Faire la même chose avec les lettres de l'alphabet est un peu plus compliqué, mais basé sur le même principe : on itère sur l'alphabet pour le caractère i, et à chaque fois, on permute les suivants à partir de i+1. Slide 28. 
+\newline \newline 
+On voit donc quel est un premier canevas de génération exhaustive. On a un appel récursif, qui dans le cas de base affiche une solution complète (avec éventuellement une condition pour voir si la solution complète est bien une solution cherchée). Dans le cas pas de base, on explore une possibilité et on construit une solution partielle. Par exemple, parcourir toutes les lettres et les mettre dans un vecteur à un certain endroit, ce qui forme une solution partielle, puis appeler récursivement pour permuter les lettres suivantes. À chaque tour de boucle, on démolit la solution partielle précédente. 
+\newline \newline 
+Générer toutes les solutions et ne garder que les bonnes est ce qu'on appelle un filtrage. 
+\newline \newline 
+Le problème du sac à dos consiste à choisir les éléments qu'on a devant soi, d'un certain volume, et de prendre ceux qui remplissent le plus possible le sac à dos, sans déborder. On cherche toutes les solutions possibles, c'est une génération exhaustive. 
+\newline \newline 
+Le filtrage intervient ici car il faut vérifier que les éléments choisis rentrent dans le sac à dos. On va donc générer tous les sous-ensembles d'éléments possibles, et ne garder que ceux qui remplissent exactement le sac à dos. Slide 40. 
+\newline \newline 
+Une optimisation est possible. On construit une solution petit à petit, et quand on prend un élément, on peut éliminer la solution partielle si le poids dépasse le poids du sac à dos. En effet, si une solution partielle dépasse le poids du sac à dos, toute autres solution constituée par l'ajout ou non d'autres objets sera invalide. La slide 43 montre une condition « choix admissible ». 
+\newline \newline 
+Cette optimisation est importante, car la génération exhaustive est un processus de complexité très importante, exponentielle. Couper dans l'arbre des possibilités permet d'économiser tout le sous-arbre, et donc énormément de temps processeur. 
+\newline \newline 
+On a pour le moment généré toutes les solutions, le code liste toutes les solutions qui remplissent le sac. On peut maintenant juste savoir s'il existe une solution, et éventuellement l'avoir. Le truc ici est de demander au code de s'arrêter dès qu'il a trouvé une solution. Quand on trouve une solution valide, on renvoie True, et l'appel récursif cesse. Slide 53 et canevas en 59. 
+\subsection{Problème des n reines}
+On a un échiquier, et on n'a que des reines, qui peuvent bouger verticalement, horizontalement et en diagonale d'un nombre illimité de cases. Si l'échiquier fait 8x8, on doit placer 8 reines où aucune ne peut prendre une autre. Pour cette dimension d'échiquier, il existe une solution, mais par pour toutes.  
+\newline \newline 
+On n'a qu'une seule reine par ligne, et exactement une. Il ne faut alors que stocker dans une liste le numéro de colonne de la reine se trouvant à cet index. 
+\newline \newline 
+En effet, une reine peut prendre horizontalement, donc une reine par ligne. Elle peut également prendre verticalement, donc pas deux reines dans la même colonne. Il faut alors les distribuer de manière à ce que les diagonales ne soient pas prises. 
+\newline \newline 
+On va donc positionner la première reine en (0, 0). Puis pour chaque reine, on voit la première colonne dans laquelle elle peut être positionnée. On fait ça jusqu'au bout, et si une reine ne peut être placée nulle part, on essaie de remonter et de replacer les autres reines, ça pourrait libérer une place.
+\subsection{Recherche de la meilleure solution}
+Il arrive qu'on n'aie besoin ni de toutes les solutions, ni d'une ou hasard, mais bien de la meilleure. Pour trouver la meilleure solution, il faut faire une génération exhaustive. Il faudra optimiser et essayer de couper le plus vite possible des branches de solutions qui ne mèneront pas à la meilleure. 
+\newline \newline 
+Un premier canevas est en slide 84 : à chaque solution, on vérifie si elle est meilleure que la précédente meilleure, et si c'est le cas, elle devient la meilleure. 
+\newline \newline 
+Une optimisation possible est que si on trouve la solution optimale (le sac est exactement rempli), on arrête le parcours des solutions. Ce n'est possible que si une solution optimale est définissable. On appelle l'élimination des branches inutiles le « branch and bound », et c'est d'une importance capitale pour les algorithmes exponentiels. 
+\newline \newline 
+Le problème du voyageur de commerce est qu'un démarcheur doit passer par un ensemble de villes, une fois par ville, et en le moins de temps possible. Il revient néanmoins à la première, là où il vit. 
+\newline \newline 
+Pour représenter la carte, il faut connaitre les routes qui permettent de relier les villes (on ne traverse pas de champs). Ces routes ont une taille, strictement supérieure à zéro. Si deux villes ne sont pas reliées par une route, la « distance » de l'une à l'autre vaut -1. Cela permet de vérifier avant tout calcul que deux villes sont voisines.  
+\newline \newline 
+À chaque étape d'exploration, on explore chaque ville reliée à la courante et qu'on n'a pas encore exploré. On garde à chaque tour de boucle la distance totale. Quand on a visité toutes les villes, on regarde si la solution trouvée est meilleure que la précédente. Une optimisation est d'abandonner un chemin en construction si sa taille dépasse un minimum déjà trouvé. 
+\newline \newline 
+Pour finir, des notes. Le backtracking n'est pas toujours exponentiel. L'espace des choix fait à chaque étape est limité, donc ça n'explose pas. Le Graham Scan problem consiste à construire un cube autour de points, et n'est pas exponentiel. 
+\newline \newline 
+Le backtracking est quelque-chose de lourd. On peut alors envisager de le dérécursifier. La slide 108 montre un canevas qu'on peut utiliser.
+\newpage
+\section{Les séquences triées}
+On va s'intéresser à la manière de manipuler des données triées. On a vu des algorithmes pour les trier, mais on peut également pouvoir vouloir s'assurer qu'elles restent triées.  
+\newline \newline 
+Notre type de donnée abstrait s'appelle « séquence triée ». L'interface de cette classe dispose de getNext() (élément suivant), getPrevious(), getData() (valeur de l'élément courant), getFirst(), getLast(), ainsi qu'insert (qui maintient le tri), remove() et find(). 
+\newline \newline 
+Considérons une liste stockée dans un vecteur non-Python, donc de simples cases mémoire. L'insertion et la suppression nécessitent des décalages $O(n)$. La recherche, par contre, est de complexité $O(log n)$.  
+\newline \newline 
+Si notre structure de donnée est une liste chaînée. L'insertion et la suppression ont un côté temps constant, mais on doit savoir où insérer et supprimer, donc la complexité reste linéaire. De plus, la mémoire n'est plus contigüe, donc le processeur va l'accéder plus lentement. La recherche dichotomique n'est malheureusement pas possible, à nouveau car on n'a pas de tableau contigu. 
+\newline \newline 
+La slide 20 introduit une liste doublement chaînée circulaire avec élément bidon. À noter : la liste circulaire doublement chaînée ne s'occupe pas du tri. C'est la classe SeqTriee, slide 26, qui s'occupe de ça. Note, la fonction insérer va toujours insérer juste avant le premier élément plus grand qu'on a trouvé. Comme on a un élément bidon, ça marche même si on n'a rien trouvé, auquel cas on insère avant l'élément bidon, donc en fin de liste.  
+\newline \newline 
+On aimerait maintenant quelque-chose qui a l'avantage de la simplicité de la liste chaînée (pour l'insertion), et la recherche dichotomique du vecteur. On va en fait utiliser un arbre binaire pour faire ça. En l'organisant bien, on obtiendra une séquence triée.
+\subsection{Arbres binaires de recherche}
+On va classer ça en disant que le fils gauche (et son sous-arbre) d'un élément doit être plus petit que le nœud. À droite, ce sont les plus grands. On appelle ça un arbre binaire de recherche (ABR), BST en anglais (binary search tree). On va devoir s'assurer pour que cette propriété soit respectée à chaque insertion.  
+\newline \newline 
+Pour effectuer une recherche, on regarde l'élément courant. Si on veut du plus grand, on va à droite. Sinon, à gauche. Si on arrive à une feuille sans avoir trouvé, c'est que l'élément cherché n'existe pas. La recherche est efficace si l'arbre est bien balancé, c'est à dire que les sous-arbres gauches ont plus ou moins la même taille que les droits. 
+\newline \newline 
+Pour afficher les éléments dans l'ordre, il suffit de faire un parcours infixe. Le plus petit élément se trouve en prenant tous les fils gauches de la racine à une feuille, qui est la plus petite. Le dernier se fait de la même manière, en allant toujours à droite. 
+\newline \newline 
+Pour obtenir l'élément suivant d'un élément, il faut un lien vers le père. Il faut prendre le plus petit élément du sous-arbre droit de ce nœud, ou s'il n'en a pas, on remonte l'arbre jusqu'à ce qu'on remonte un lien « fils gauche ». On trouve alors le premier père juste plus grand. La recherche du précédent se fait de manière symétrique. 
+\newline \newline 
+Pour ajouter un élément, il faut savoir où l'insérer. On peut soit faire ça simplement, mais ça ne balance pas bien l'arbre, soit de manière compliquée mais balancer. La méthode simple n'insère que des feuilles. On parcourt l'arbre jusqu'à trouver la feuille la plus proche de ce qu'on veut insérer, en regardant à chaque fois si c'est le lien gauche ou droit qu'il faut suivre. Une fois l'emplacement trouvé, un insert la feuille, transformant l'ancienne feuille en nœud. La propriété reste respectée, mais l'arbre peut se creuser. 
+\newline \newline 
+La suppression est difficile côté programmation. En effet, on peut tomber sur une feuille (facile, on supprime directement), sur un nœud avec un fils droit et est lui-même fils droit, on établit un pont. Si le nœud a deux enfants, on doit trouver son suivant (qui sera dans le sous-arbre droit). On accroche à ce suivant le fils gauche du nœud supprimé. On accroche alors ce sous-arbre au parent de 5. Un cas embêtant est si le suivant du nœud supprimé n'est pas directement son enfant, il faut éviter d'avoir des sous-arbres dans la nature. La slide 68 présente l'algorithme pour gérer tous les cas. 
+\newline \newline 
+La complexité de tous ces algorithmes, quand l'arbre est bien balancé, est en $O(log n)$. Si l'arbre est super mal balancé (dégénéré, sous forme de liste), la complexité deviendra $O(n)$. Le balancement a donc de l'importance. Heureusement, on peut le rebalancer, avec un code récursif, mais non montré cette année. On préfère rebalancer l'arbre après une grande quantité d'insertions, qui peuvent très fort débalancer. On peut ensuite relire son arbre bien balancé.  
+\newline \newline 
+Les arbres AVL sont toujours bien balancés, mais vu en 3e. Des rotations lors de l'insertion permettent de bien équilibrer aux insertions. La slide 80 et suivantes implémentent l'arbre binaire récursif. La suppression sera aussi récursive, plus simple qu'expliquée, mais moins performante.
+\newpage
+\section{Les files à priorité}
+C'est une structure de donnée qui sera utile pendant toutes nos études. L'idée est de faire comme une file d'attente (on a déjà vu la queue), mais on va gérer les priorités. L'élément qui va sortir le premier sera le plus prioritaire. C'est une généralisation de la queue et de la stack : on met la priorité à des indices croissants, et on dit que la priorité maximale est respectivement quand la priorité est la plus faible ou plus importante. 
+\newline \newline 
+L'interface de ce type de donnée abstrait contient insert(élément, priorité), delete() (supprime l'élément à la priorité maximale), priorityUp, priorityDown pour modifier la priorité d'un élément de la file. 
+\newline \newline 
+Implémenter ça peut se faire dans une liste non triée (insertion facile, simple append, mais retirer un élément nécessite qu'on parcoure toute la liste). Cette structure de donnée pourrait ne fonctionner que si on ajoute beaucoup et retire peu.  
+\newline \newline 
+Une bonne manière de faire est d'utiliser un heap (un tas), un arbre binaire où chaque racine est plus prioritaire que ses deux enfants. C'est différent d'un BST où les éléments du sous-arbre gauche étaient plus petits que la racine, et les éléments du sous-arbre droit plus grands. Ces heap ne sont pas triés, on a des éléments plus petits qu'une racine aussi bien à gauche qu'à droite. 
+\newline \newline 
+L'arbre, contrairement aux BST, ne sera pas basé sur des pointeurs. On va utiliser un vecteur, comme expliqué au début du chapitre des arbres. Le fils gauche d'un élément i se trouve en 2i + 1, le droit en 2i + 2. Cela remplit le vecteur sans trou si l'arbre est complet. 
+\newline \newline 
+L'élément le plus prioritaire, la racine, se trouve donc en indice 0, c'est facile de le récupérer. Les données sont contigües en mémoire, c'est rapide d'accès. On va s'assurer pour que le heap n'aie jamais de trous dans ses feuilles, pour que le vecteur soit toujours contigu. L'arbre sera toujours bien balancé, on n'aura pas de solutions dégénérées.  
+\newline \newline 
+Une des opérations principales sur un tas est de maintenir la structure de heap si la priorité d'un élément augmente (il doit remonter dans le heap) ou diminue (il descend).  
+\newline \newline 
+Pour augmenter une priorité, on compare le nœud avec son parent, et on swap tant que la priorité nouvelle est plus élevée que la priorité du parent. Swap est facile, on ne s'occupe pas des liens, on ne swap que la donnée et la priorité. On se fiche du frère. La complexité est $O(log n)$. Pour retrouver le parent d'un nœud, on fait (i-1)/2. La division entière fait que ça marche aussi bien pour les 2i+1 et 2i+2. La slide 17 montre le code.  
+\newline \newline 
+Pour diminuer une priorité, il faut faire un swap entre le père et son enfant le plus prioritaire tant qu'un des deux enfants (au moins) est plus prioritaire. C'est encore toujours en $O(log n)$, même si on a fait une comparaison de plus. 
+\newline \newline 
+Retourner l'élément le plus prioritaire est simplement prendre la racine. L'insertion est un peu plus complexe. On commence par l'insérer pour qu'il soit la feuille suivante, donc on l'append à la fin du vecteur. Ensuite, on appelle priorityUp() pour le faire remonter dans l'arbre où il doit être.  
+\newline \newline 
+La suppression de l'élément maximal consiste à retirer la racine, et on va prendre la dernière feuille, à la fin du vecteur. On la place alors au début du vecteur, puis on fait un priorityDown. 
+\subsection{Le heap sort}
+Il est possible de trier de manière assez efficace avec un heap. On a déjà vu quicksort qui va de $O(n log n)$ à $O(n2)$, mais qui était récursif. On va maintenant se baser sur l'idée d'un heap, qui est un vecteur, et on trie généralement un vecteur.  
+\newline \newline 
+Le tri se fait en deux étapes. Premièrement, on a un vecteur quelconque, qu'on transforme en un heap. Une fois qu'on a un heap, on sort répétitivement l'élément de priorité la plus élevée, qu'on met à la fin. On va alors avoir un vecteur croissant. 
+\newline \newline 
+Pour réorganiser un vecteur quelconque en heap, on cherche le dernier père. Ce dernier père est simplement le père du dernier élément, c'est simple à trouver. On fait alors, sur ce père, une réorganisation vers le bas. Ensuite, on prend le frère de ce père, donc son indice mois un. On fait à nouveau une organisation vers le bas. On décrémente encore d'un indice, on tombe sur le père (dans l'exemple) ou un autre nœud intéressant. On refait encore une organisation vers le bas. On fait ça en $O(n log n)$ sans dégénérescence. 
+\newline \newline 
+La deuxième phase est aussi en $O(n log n)$, donc on a une complexité générale $O(n log n)$, sans pire des cas.  
+\newline \newline 
+À la slide 50, on ne swap pas. En effet, il est plus efficace de sauvegarder quelque-part l'élément avec lequel on veut comparer, puis on peut l'écraser sans vergogne, il est quelque-part. On ne le place au bon endroit que quand on a trouvé sa place finale, sans faire plus d'étapes inutiles. 
+\newline \newline 
+Cet algorithme est non stable. Comparé à quicksort, il est un peu plus lent, car quicksort est vraiment rapide quand il ne dégénère pas. Néanmoins, on économise des appels récursifs.
+\newpage
+\section{La dérécursification} 
+Ce chapitre permet de voir comment passer d'un code récursif à une version itérative. Cela peut être pour des raisons de performance. Par exemple, tout le contexte d'une fonction ne doit pas spécialement être sauvé, et sauver à la main permet de mieux choisir le contexte qu'on sauvegarde. 
+\newline \newline 
+De plus, tous les langages ne permettent pas la récursivité. Les langages modernes le permettent, mais pas tous. 
+\newline \newline 
+Il n'y a pas de processus permettant de dérécursifier un code de manière automatique et que ce soit joli. Il faudra passer par des canevas suivant les cas de récursivité qu'on peut rencontrer (dans un test, dans une boucle, avant, après, unaire, n-aire, etc).  
+\newline \newline 
+Dans ce chapitre, C(x) est la condition d'arrêt, B(x) le cas de base, A(x) le traitement dans le cas récursif, P(x) la fonction récursive qui se ré-appelle, et f(x) la modification qu'on apporte à x avant l'appel récursif.
+\subsection{Fausse récursivité}
+Si on ne fait rien après l'appel récursif, on ne se sert plus de contre contexte, cela veut dire qu'il n'aurait jamais du être sauvegardé. Les fonctions s'appellent l'une après l'autre, et ne reviennent jamais en arrière avant qu'on ait la solution. Il suffit de mettre les appels dans une boucle et on a dérécursifié. La factorielle est un exemple typique. 
+\newline \newline 
+La slide 17 montre comment transformer cette récursivité en une boucle.
+\subsection{Récursivité unaire}
+Un traitement suit l'appel récursif, on ne peut plus tout simplement convertir en boucle. Néanmoins, le traitement s'effectue sur le contexte non modifié par l'appel récursif.  
+\newline \newline 
+Si on regarde l'exécution, on constate qu'on a une séquence de A0 qui s'exécutent, puis on arrive au cas de base, on remonte et on fait tous les A1. Comme A1 porte sur le x non modifié, on doit le stocker quelque-part quand on dérécursifie. On peut également faire f-1(x), faire le calcul inverse. On remonte alors et on arrive à retrouver le X à chaque étape. La slide 22 montre le canevas.  
+\newline \newline 
+Si la fonction modifiant x n'est pas inversible, il faut sauvegarder x à chaque étape, pour pouvoir le récupérer. La slide 25 montre un canevas pour cela. On ne stocke plus le niveau courant, on utilise à la place une pile. 
+\subsection{Récursivité binaire}
+On appelle deux fois la fonction récursive, avec trois traitements entre ces appels. X est modifié de deux manières pouvant être différentes entre les deux appels.  
+\newline \newline 
+Quand on exécute la fonction depuis le début, on exécute tous des A0 jusqu'au cas de base. Puis on va commencer à remonter, passer à A1, et on risque de revenir à des A0. Les autres remontées peuvent mener à A1 ou A2, c'est plus compliqué. Quand on va sauvegarder x, on va également mettre d'où il vient, de f1 ou de f2. Comme ça, on saura comment encore le transformer. 
+\newline \newline 
+La slide 29 montre le canevas, avec une pile utilisant une sentinelle pour varier (tester sur empty() est tout aussi bon). Les données sont empilées sous forme de tuples comprenant l'appel 1 ou 2 qui a produit le x, et le x lui-même. On utilise pour cela une boucle n+1/2. 
+\newline \newline 
+Des A0 peuvent se suivre sur la pile, car on peut être descendu dans la récursion. Les A2 peuvent également se suivre, car on peut être remonté juste après et être revenu devant un autre A2. Par contre, A1 est pris en sandwich et ne peut apparaitre en série. 
+\newline \newline 
+Une fois qu'on a appliqué le canevas, on peut l'optimiser, surtout si des Ax n'existent pas. Par exemple, en slide 34, on peut supprimer des push inutiles. Si on supprime tous les push sauf un, on peut éliminer l'information de la source d'un push (le i du code). On peut également voir ce qu'il faut push, ce dont on se sert, pour éliminer des informations inutiles. La sentinelle est également une mauvaise idée pour les performances. Il en résulte un code beaucoup plus petit et propre, ne pushant que les arbres gauches (plus optimisé que chap4.ex3).
+\subsection{Récursivité n-aire}
+Le nombre d'appels de fonctions est ici supérieur à deux. On a n+1 blocs d'instructions interlacés avec n appels récursifs. Dans la version dérécursifiée, on aura toujours la boucle avec A0, puisqu'il peut être présent en séquence. De même, An sera également présent en série. Pour les autres, on n'aura qu'une seule opération suivie d'une séquence de A0. En effet, ils appelleront la fonction récursive. 
+\newline \newline 
+Le code dérécursifié se base sur celui de la récursivité binaire. On a la même boucle avec la condition d'arrêt, ainsi que la séquence An. Ce sont deux whiles. Puis, on compare avec la valeur sentinelle, c'est la partie n+1/2 de la boucle. Après cette condition se trouve un gros if/elif/elif/... pour voir d'où on remonte.
+\subsection{Récursivité non linéaire}
+On a ici des traitements avant un while, des appels récursifs dans un while, puis encore un traitement et encore un appel récursif.  
+\newline \newline 
+Pour dérécursifier ce genre de fonction, un test permet de se débarrasser de la boucle while dans la fonction. La pile et le fait qu'on stocke dans i l'appel ayant push la valeur fait qu'on pourra s'en tirer. Cela est présenté aux slides 43 et 44. 
+\newline \newline 
+Il est également possible d'avoir une condition dont dépendent des appels récursifs. Là encore, on s'occupe pour stocker sur la pile la fonction suivante qui devra être exécutée avec le x push, comme une série de goto permettant de lower les boucles et conditions du programme.  
+\newline \newline 
+Ces techniques de dérécursification ne gèrent malheureusement pas le passage de variables par référence et les effets de bord. Chaque fonction ne peut voir que ce qu'il y a au-dessus, passé en paramètre, mais aucun retour de valeur n'est possible. 
+\newpage
+\section{La programmation dynamique}
+La programmation dynamique est un gros chapitre de la programmation et ce cours n'en présente qu'une petite introduction. Quand on utilise la technique diviser pour résoudre, on a un code récursif qui peut ne pas être complètement optimal. Par exemple, des calculs peuvent être faits plusieurs fois. Composer une solution demande d'avoir d'autres solutions calculées.  
+\newline \newline 
+Le principe de la programmation dynamique est de stocker des résultats intermédiaires, pour pouvoir s'en resservir si on en a besoin. On évite ainsi les calculs inutiles de Fibonacci par exemple. 
+\newline \newline 
+Pour Fibonacci, une méthode « bottom-up » consiste à calculer fibo(1), puis pour 2, 3, etc, jusqu'à obtenir le nombre qu'on veut. Une méthode « top-down » utilise un dictionnaire pour stocker les résultats, pour ne pas les re-calculer. 
+\newline \newline 
+Le problème du sac à dos peut aussi se prêter à la programmation dynamique. La slide 13 montre qu'en sauvegardant le poids maximum atteint quand le sac contient déjà un certain poids accélère largement l'algorithme.  
+\newline \newline 
+Le quicksort était une sorte de programmation dynamique, puisqu'on ne détruit pas les solutions après leur calcul. 
+\newpage
+\section{Les tris externes}
+On va s'intéresser ici à des données tellement importantes qu'elles ne rentreront jamais dans la mémoire de l'ordinateur. Les algorithmes de tri qu'on a vu jusqu'à maintenant nécessitent que toutes les données soient en mémoire. Dans ce chapitre, on va exagérer, en disant que la mémoire fait 5 éléments et le fichier 20.  
+\newline \newline 
+Aujourd'hui, nous sommes de plus en plus entourés par des données énormes. Des données sont collectées tout le temps, dans les entreprises, ce que font les clients, etc. Il faut savoir traiter les données partiellement en mémoire en ayant une vision globale. 
+\newline \newline 
+Stocker des données sur le disque dur impose certaines contraintes. D'abord, c'est immensément plus lent que la mémoire centrale. Il faut donc minimiser les lectures et écritures sur le disque. De plus, les appels séquentiels sont plus rapides car la tête du disque doit moins se déplacer. On est donc confronté à des problèmes « mécaniques » en algorithmique. 
+\newline \newline 
+Ces considérations matérielles font que le temps pris par le tri lui-même est complètement négligeable par rapport au temps des accès au disque. On ne regardera donc pas la complexité du tri, mais la complexité de ses accès. Les algorithmes de tris devront effectuer plusieurs passes sur le fichier, et on comptera ce nombre de passes.
+\subsection{Tri fusion}
+Cet algorithme prend des blocs du fichier, les trie, et les écrit dans des fichiers différents. Le nombre de ces fichiers utilisés aura un impact sur la complexité. Plus il y aura de fichiers, moins on aura de passes, mais au plus on aura des accès. Il font donc bien balancer. L'exemple a une mémoire de 3 caractères, le fichier à trier en fait 21, et on utilisera 3 fichiers à la fois.  
+\newline \newline 
+On va donc prendre P blocs, les trier, et les écrire dans P fichiers. On continue ensuite les blocs, qu'on va ajouter à la fin des fichiers. Les 3 fichiers contiendront donc des données triées par groupe de 3 caractères (taille de la mémoire). Vient ensuite la fusion. On regarde les premiers blocs de chaque fichier. On a 3 fichiers, 3 octets de mémoire. On peut donc lire un caractère de chaque fichier dans la mémoire. On prend le plus petit, qu'on écrit dans un fichier. On avance dans le fichier contenant ce caractère. On fait à nouveau la même opération d'écriture du plus petit caractère. Quand on aura fusionné tous les premiers blocs, on a une fusion triée. 
+\newline \newline 
+On fusionne également les autres blocs, mais dans un autre fichier. Dans l'exemple, on se retrouve avec 3 fichiers contenant un seul bloc de 9 caractères triés (au plus). Une nouvelle passe de fusion permet de réécrire le résultat cette fois-ci complètement trié dans le premier fichier. 
+\newline \newline 
+On a donc un fichier trié en n'ayant jamais lu l'entièreté des données en mémoire. Ce tri a une complexité de $1+ceil(log_p(N/M))$ passes. 
+\subsection{La mémoire comme heap}
+On peut voir la mémoire comme étant un heap. Si on a une mémoire de 5 caractère et un fichier de 21 caractères, on commence par lire 5 octets du fichier qu'on met dans la mémoire, présentée sous forme de heap. 
+\newline \newline 
+Quand la mémoire est pleine, on sort la racine du heap, et on ajoute un nouveau caractère comme racine qu'on réorganise ensuite vers le bas. On sort le caractère au sommet, et ainsi de suite. Un problème est qu'on peut sortir un caractère, puis en entrer un nouveau qui serait plus petit. Ce ne sera pas trié. On va alors marquer les caractères qui entrent en étant plus petits que celui qui vient de sortir. Ces caractères marqués seront toujours considérés comme étant plus petits que les autres.  
+\newline \newline 
+Quand le heap est complètement rempli de caractères marqués comme précédemment expliqué, c'est qu'on vient de finir un bloc (assez grand) d'éléments qu'on a pu trier. On efface donc le marquage de ces éléments et on continue l'algorithme, dans un nouveau bloc.  
+\newline \newline 
+Une fois qu'on a nos blocs répartis dans des fichiers, des passes de fusion permettent d'obtenir le fichier final trié. C'est plus rapide que l'algorithme précédent $(1+ceil(log_p(N/(2M))))$ car le heap peut en moyenne faire deux « tours » avant d'être complètement marqué.
+\subsection{Fusion multiphasée}
+On va essayer de limiter le nombre de fichiers utilisés, et non le nombre d'accès. En effet, les algorithmes précédents utilisent toujours la moitié des fichiers qu'ils ont réservé, ils lisent dans un et écrivent dans l'autre. On va s'arranger pour fusionner ça en utilisant tous les fichiers sauf un, qui sera le seul écrit dedans.  
+\newline \newline 
+On se trouve donc au niveau des blocs, qui peuvent avoir été produits avec n'importe quel algorithme déjà vu. Les slides autour de 83 et 84 montrent qu'en organisant bien les blocs sur tous les fichiers sauf un, on peut maximiser l'utilisation des fichiers. Si on veut qu'à la dernière étape, ce soit le fichier 0 qui contienne le fichier trié, il faut calculer le nombre de blocs qui devront être mis dans chacun des fichiers. La slide 90 présente cela. La slide 97 dit qu'en utilisant cette astuce, on obtient une complexité dans laquelle apparait le nombre d'or.
+\newpage
+\section{polynômes}
+Une façon simple de représenter un polynôme est une somme de monômes de degré différent. Chaque monôme contient deux informations : un coefficient et un degré. On peut gérer le degré en disant que c'est l'indice d'une case d'un vecteur. Le contenu de la case sera alors le coefficient. 
+\begin{figure}[h!]
+  \includegraphics[width=0.1\linewidth]{schema3.png}
+\end{figure}
+\newline 
+Pour additionner deux polynômes, on additionne les coefficients membre à membre. Pour la multiplication, il faut multiplier les coefficients et additionner les degrés. Il faut donc s'assurer que la liste de retour soit assez large pour contenir la réponse. 
+\newline \newline 
+Cette représentation est performante si la majorité des coefficients sont différents de zéro. S'il y a plein de zéros, on perd beaucoup de place. On parle de densité du polynôme. 
+\newline \newline 
+Un polynôme non-dense (creux) peut être représenté sous forme d'un dictionnaire ou d'une liste de tuples (degré, coefficient). La clé contient le degré, la valeur le coefficient. On ne stocke alors plus les zéros. 
+\newline \newline 
+L'addition sur ces polynômes est ici plus compliquée. On commence au degré le plus élevé, et on avance à chaque fois d'une position dans le polynôme ayant le plus grand degré, en copiant son coefficient. Si les degrés sont égaux, on additionne les coefficients qu'on place dans le résultat. 
+\newline \newline 
+La multiplication demande deux fonctions. Une qui multiplie un monôme par un polynôme (donc elle parcourt le polynôme, additionne les degrés et multiplie les coefficients), et une qui fait la multiplication elle-même en parcourant tous les monômes et en les multipliant.
+\subsection{polynômes en plusieurs variables}
+Cette représentation est complexe. Le principe est d'exprimer un polynôme du genre $-3xz^{3} + xyz + z^{3} + x^{2} + 3$ en polynôme en z avec des variables dans les coefficients. 
+\newline \newline 
+La structure de donnée est liée, présentée dans un PDF. Les éléments de coefficient 0 ne sont pas représentés, sauf l'élément de degré zéro. Le principe est de représenter les coefficients d'un polynôme par d'autres polynômes, sous forme d'une structure proche d'un arbre, mais lié également entre nœuds gauche/droit, parent/premier enfant. 
+\newline \newline 
+Cette structure de donnée peut servir à représenter des matrices creuses. Grosso-modo, on a des éléments qui peuvent avoir un élément en-dessous, au-dessus, à gauche ou à droite. L'élément (0,0) existe toujours, de même que les éléments de la première ligne et première colonne. Puis, les données de la matrice sont ajoutées comme étant des nœuds en-dessous/à gauche/etc de ces nœuds ou d'autre nœuds.
+\subsection{Gérer de grands nombres}
+On gère des nombres sur 4 ou 8 octets, mais on a parfois besoin de nombres encore plus grand que $26^{4}$. On peut alors utiliser des polynômes. Par exemple, si on veut représenter 1 200 004 012 314, on peut dire qu'il vaut $x^{12} + 2x^{11} + 4x^{6} + x^{4} + 2x^{3} + x^{2} + x + 4$. Pour représenter le nombre, il suffit de mettre 10 dans x (puisqu'on a utilisé la base 10 ici).  
+\newline \newline 
+Additionner deux nombres revient à additionner deux polynômes, en faisant attention à ce que des coefficients ne deviennent pas supérieur à 10. Cette méthode permet de représenter des nombres aussi grand qu'on veut jusqu'à ce que la mémoire soit remplie.
+\newpage
+\section{Tables de hashage}
+Le dictionnaire Python permet de retrouver la valeur associée à une clef, en temps constant. On utilise pour cela des fonctions de hashage, qui ont été inventées par Hans Peter Luhn (IBM) en 1953. Le but est de rechercher des informations en temps si possible constant. 
+\newline \newline 
+La zone de stockage des données s'appelle un dictionnaire, ou « hash table ». Si on veut stocker une information de clé M, on la stocke dans la table T à l'indice T[hash(M)]. La fonction de hashage permet donc de transformer une clé en indice. 
+\newline \newline 
+Le problème est qu'il y a une infinité de clés possibles, mais la table a une taille limitée. Il est donc impossible de garantir qu'il n'y aura pas de collision, deux clés ayant le même hash. On doit donc résoudre deux problèmes : trouver une fonction de hashage, et gérer les collisions.
+\subsection{Clés distribuées uniformément dans un espace}
+Si les messages à hash sont uniformément distribués dans un intervalle connu, par exemple ]0, R] , il suffit de « compresser » ces clés : hash(k) = floor((n*m)/(R+e)) avec n = taille de la table, et e une toute petite valeur pour décaler la division. 
+\newline \newline 
+Exemple : avec n = 5 
+\lstset{language=Python}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+	m = 1 | floor(5*1/(9+e)) = 0
+	m = 3 | floor(5*3/(9+e)) = 1
+	m = 5 | floor(5*5/(9+e)) = 2
+	m = 7 | floor(5*7/(9+e)) = 3
+	m = 9 | floor(5*9/(9+e)) = 4
+\end{lstlisting}
+\subsection{Nombres entiers}
+On peut dire que hash(k) = k\%n , avec n la taille de la table. On a donc ici forcément des indices qui se trouvent dans le vecteur.
+\newline \newline 
+Il faut simplement éviter de prendre n égal à 2$^{ }$quelque\_chose, car on ne construirait alors les hash qu'en se basant sur les quelque\_chose bits de poids faible des valeurs. Malheureusement, rien ne dit que ces valeurs changent suffisamment, alors que les bits de poids fort bougent beaucoup.
+\subsection{Entiers ou nombres à virgule flottante}
+On peut également avoir : 
+\newline \newline 
+\indent hash(k) = floor(n*(k*cste-(floor(m*cste)))), ou floor(n*partie\_decimale(k*cste)). 
+\newline \newline 
+Généralement, la constante est le nombre d'or.
+\subsection{Gestion des collisions}
+Pour gérer les collisions, on dispose de plusieurs méthodes. 
+\newline \newline 
+La méthode de chaînage place dans le slot T[hash(k)] une liste de toutes les clés et valeurs correspondant à ce hash. Dans le cas du separate chaining, la table de hash contient la valeur de la première clé dont le hash correspond à la case. Ensuite, toute les collisions se font ajouter en tête d'une liste spécialement allouée à ce moment-là. Le direct chaining revient à la même chose, sauf que la table ne contient qu'une tête de liste, donc tous les éléments, même le premier d'un slot, se trouvent dans la liste des collisions. 
+\newline \newline 
+La méthode « overflow area », des zones de débordement, se base sur deux zones : la table, et une zone de débordement allouée pour y mettre les collisions. Si on hash "hello", et qu'on obtient 2, on va mettre "hello" dans T[2]. Si on hash "car", et qu'on ré-obtient 2, on place "car" dans l'overflow area et on ajoute un pointeur dans T[2] vers cette zone "car" dans l'overflow area. Un troisième mot produit encore une collision, et on a déjà une collision. On ajoute ce mot dans l'overflow area, et on place un lien entre "car" et ce mot. C'est comme le chaînage, mais dans une zone de mémoire contigüe, plus rapide à l'accès.  
+\newline \newline 
+On peut également re-hash quand on rencontre une condition. On hash la clé, et si elle entre en collision, on la re-hash elle-même. L'indice devient h(h(k)). On fait ça jusqu'à ce qu'on tombe sur une place vide. Il existe des variantes de ce re-hash :
+\begin{itemize}
+	\item[$*$] two-way hashing : on a la table T et deux fonctions de hashage. On insert à l'emplacement dans T où il y a le moins de collisions, en utilisant la fonction 1 ou 2. Il faut ensuite utiliser le chainage ou autre pour réellement stocker la donnée. 
+	\item[$*$] two-left hashing : la même chose mais avec 2 tables. On insert dans la table où le hash respectif des fonctions mène au moins de collisions. C'est un peu plus efficace. 
+	\item[$*$] Cuckoo hashing : on a deux tables, T1 et T2, et deux fonctions de hashage h1 et h2. Si T1[h1(m)] est libre, on insert à cet emplacement. Sinon, on s'y insère quand-même, et on essaie de trouver une nouvelle place pour son ancienne valeur. On essaie T2[h2(m')]. Si c'est libre, ok. Sinon, il prend la place, et m” va voir dans T1[h1(m”)]. On continue jusqu'à ce qu'on trouve une place libre. 
+\end{itemize}
+ La dernière méthode qu'on verra, une sorte de re-hashage, est l'open addressing. On hash la clé, sa place est déjà prise. On va simplement l'insérer à la première place libre à côté. Le problème est que si un endroit produit beaucoup de collisions, on construit un « cluster », plein d'éléments se mettent ensemble et ça ralentit. Il existe des variantes pour éviter ça :  
+\begin{itemize}
+	\item[$*$] Linear probing : si c'est occupé en T[h(m)], on va voir en T[h(m)+step], et ainsi de suite. Step est le pas, généralement 1, mais on peut faire des pas plus grands pour étaler le clustering. On peut aller voir vers la gauche aussi.
+	\item[$*$] Quadratic probing : si T[h(m)] est occupé, on va voir en T[h(m)+c1*i+c2*i2], avec c1 et c2 des constantes, c2 différent de 0, et i vaut le pas, qui varie, par exemple le nombre d'essais ratés. 
+	\item[$*$] Double hashage : si T[h1(m)] est occupé, on va voir en T[h1(m)+i*h2(m)].  
+\end{itemize}	
+Le problème de ces méthodes de hashage qui n'allouent rien hors de la table est qu'il peut arriver que la table soit remplie, on ne sait plus rien y insérer.
+\newpage
+\section{Skip List}
+C'est une structure de donnée bizarre qui allie les avantages de la table de hashage et l'arbre binaire de recherche. On utilise une structure en couches. On a une liste de têtes, une par couche (par exemple 4). Chaque tête pointe sur un élément. Quand on cherche un élément, on regarde l'élément de la tête. Si c'est bon, ok. Sinon, on regarde le suivant, à droite. S'il est trop grand, on va plutôt voir en-dessous, et on recommence. Si plus petit, on continue sur cet élément. 
+\newline \newline 
+Si même l'élément de la tête était trop grand, on prend la tête en dessous. Quand plus rien n'est possible, c'est qu'on n'a plus rien trouvé. 
+\newline \newline 
+Pour insérer un élément, on l'ajoute dans le niveau le plus inférieur, au bon endroit (facile à trouver). Puis, on doit le dupliquer vers le haut, de manière aléatoire ou probabiliste. 
+\newline \newline 
+La particularité de cette structure de donnée est qu'elle duplique des données.  
+\lstset{language=C++}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+Node *current = other._head ;  
+
+do {
+    insertAtEnd(current->data()); 
+    current = current->getNext(); 
+} while (current != other._head);
+\end{lstlisting}
+
+\end{document}
